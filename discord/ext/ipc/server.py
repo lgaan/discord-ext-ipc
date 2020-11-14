@@ -79,27 +79,27 @@ class Server:
             
             if not headers or not headers.get("Authentication"):
                 response = {"error": "No authentication provided.", "status": 403}
-            
-            token = headers.get("Authentication")
-            
-            if token != self.secret_key:
-                response = {"error": "Invalid authorization token provided.", "status": 403}
-            else:
-                endpoint = parsed_json.get("endpoint")
-                
-                if not endpoint or not self.endpoints.get(endpoint):
-                    response = {"error": 'No endpoint matching {} was found.'.format(endpoint), "status": 404}
+            elif:
+                token = headers.get("Authentication")
+
+                if token != self.secret_key:
+                    response = {"error": "Invalid authorization token provided.", "status": 403}
                 else:
-                    server_response = IpcServerResponse(parsed_json)
-                    response = await self.endpoints[endpoint](server_response)
-            
+                    endpoint = parsed_json.get("endpoint")
+
+                    if not endpoint or not self.endpoints.get(endpoint):
+                        response = {"error": 'No endpoint matching {} was found.'.format(endpoint), "status": 404}
+                    else:
+                        server_response = IpcServerResponse(parsed_json)
+                        response = await self.endpoints[endpoint](server_response)
+
             writer.write(json.dumps(response).encode("utf-8"))
             await writer.drain()
             
             break
     
     def start(self):
-        server_coro = asyncio.start_server(self.client_connection_callback, "localhost", self.port, loop=self.loop)
+        server_coro = asyncio.start_server(self.client_connection_callback, self.host, self.port, loop=self.loop)
         
         self.bot.dispatch("ipc_ready")
         self.loop.run_until_complete(server_coro)
